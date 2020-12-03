@@ -19,9 +19,7 @@ def redirect_to_list_view(admin: "ModelAdmin"):
 
 def get_object_url(model: Type["models.Model"], pk: int):
     opts = model._meta
-    return reverse(
-        f"admin:{opts.app_label}_{opts.model_name}_change", args=(pk,)
-    )
+    return reverse(f"admin:{opts.app_label}_{opts.model_name}_change", args=(pk,))
 
 
 def get_object_url_from_obj(obj: "models.Model"):

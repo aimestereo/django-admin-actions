@@ -226,16 +226,20 @@ class ActionsModelAdmin(ModelAdmin):
         """
         self.object = instance
 
-        return render_to_string('admin/change_list_item_object_tools.html', context={
-            'instance': instance,
-            'actions_row': self._get_action_buttons(self.actions_row, instance.pk),
-        })
-    actions_holder.short_description = ''
+        return render_to_string(
+            "admin/change_list_item_object_tools.html",
+            context={
+                "instance": instance,
+                "actions_row": self._get_action_buttons(self.actions_row, instance.pk),
+            },
+        )
+
+    actions_holder.short_description = ""
 
     def get_list_display(self, request):
         self.request = request
         if len(self.actions_row) > 0:
-            return super().get_list_display(request) + ('actions_holder', )
+            return super().get_list_display(request) + ("actions_holder",)
         return super().get_list_display(request)
 
     def change_view(self, request, object_id, form_url="", extra_context=None):
@@ -267,7 +271,7 @@ class ActionsModelAdmin(ModelAdmin):
     def add_actions_context(self, extra_context, method_names, object_id):
         return {
             **(extra_context or {}),
-            'actions_list': self._get_action_buttons(method_names, object_id),
+            "actions_list": self._get_action_buttons(method_names, object_id),
         }
 
     def _get_action_buttons(self, method_names, object_id):
@@ -277,10 +281,12 @@ class ActionsModelAdmin(ModelAdmin):
         for method_name in method_names:
             method = getattr(self, method_name)
 
-            actions.append({
-                'title': getattr(method, 'short_description', method_name),
-                'path': reverse('admin:' + self._get_url_name(method_name), args=url_args)
-            })
+            actions.append(
+                {
+                    "title": getattr(method, "short_description", method_name),
+                    "path": self._get_url(method_name, url_args),
+                }
+            )
         return actions
 
     def _confirmation_view(
@@ -330,10 +336,10 @@ class ActionsModelAdmin(ModelAdmin):
 
     def get_urls(self):
         urls = super().get_urls()
+        detail_method_names = set(self.actions_row) | set(self.actions_detail)
 
         return (
-            self._generate_urls_for(self.actions_row, detail=True)
-            + self._generate_urls_for(self.actions_detail, detail=True)
+            self._generate_urls_for(detail_method_names, detail=True)
             + self._generate_urls_for(self.actions_list, detail=False)
             + urls
         )
@@ -351,22 +357,25 @@ class ActionsModelAdmin(ModelAdmin):
                 path(
                     url_path,
                     self.admin_site.admin_view(method),
-                    name=self._get_url_name(method_name)
+                    name=self._get_url_name(method_name),
                 )
             )
 
         return action_urls
 
     def _get_url_name(self, method_name):
-        return f"{self.get_admin_view_prefix()}__{method_name}"
-
-    def get_admin_view_prefix(self):
         opts = self.model._meta
-        return f'{opts.app_label}_{opts.model_name}'
+        return "%s_%s_%s" % (opts.app_label, opts.model_name, method_name)
+
+    def _get_url(self, method_name, url_args):
+        return reverse(
+            "%s:%s"
+            % (
+                self.admin_site.name,
+                self._get_url_name(method_name),
+            ),
+            args=url_args,
+        )
 
     class Media:
-        css = {
-            'all': (
-                'css/admin-actions.css',
-            )
-        }
+        css = {"all": ("css/admin-actions.css",)}
