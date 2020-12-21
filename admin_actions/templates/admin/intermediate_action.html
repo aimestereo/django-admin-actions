@@ -1,35 +1,30 @@
 {% extends "admin/base_site.html" %}
-
 {% load admin_urls %}
 
+{% block extrastyle %}{{ block.super }}
+{% if form %}{{ form.media }}{% endif %}
+{% endblock %}
+
 {% block breadcrumbs %}
-    <div class="breadcrumbs">
-        <a href="{% url 'admin:index' %}">Home</a>
-        &rsaquo; <a href="{% url 'admin:app_list' app_label=app_label %}">{{ app_label|capfirst|escape }}</a>
-        &rsaquo; <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
-        &rsaquo; <a href="{{ instance_url }}">{{ instance }}</a>
-        &rsaquo; {{ action_short_description }}
-    </div>
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Home</a>
+    &rsaquo; <a href="{% url 'admin:app_list' app_label=app_label %}">{{ app_label|capfirst|escape }}</a>
+    &rsaquo; <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+    &rsaquo; <a href="{{ instance_url }}">{{ instance }}</a>
+    &rsaquo; {{ action_short_description }}
+</div>
 {% endblock %}
 
 {% block content %}
+<h2>{{ action_short_description }}</h2>
+<p>{{ instance }}</p>
 <form action="" method="post">
-  {% csrf_token %}
-
-  <p>
-  Are you sure you want to execute this action on the selected item?
-  </p>
-
-  <p>{{ instance }}</p>
-  <input type="hidden" name="_selected_action" value="{{ instance.pk }}" />
-
-  <div>
-  {% if form %}
-    {{ form }}
-  {% endif %}
-</div>
-  <input type="hidden" name="action" value="{{ action_name }}" />
-
-  <input type="submit" name="apply" value="{{ action_short_description }}"/>
+    {% csrf_token %}
+    {% if form %}
+    <table>{{ form.as_table }}</table>
+    {% endif %}
+    <input name="_selected_action" type="hidden" value="{{ instance.pk }}"/>
+    <input name="action" type="hidden" value="{{ action_name }}"/>
+    <input name="apply" type="submit" value="{{ action_short_description }}"/>
 </form>
 {% endblock %}
