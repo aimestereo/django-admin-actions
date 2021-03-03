@@ -3,7 +3,6 @@ from functools import wraps
 from typing import Iterable, TYPE_CHECKING, Any, Optional
 
 from django import forms
-from django.conf import settings
 from django.contrib.admin import ModelAdmin
 from django.http import HttpResponseRedirect
 from django.http.response import HttpResponseBase
@@ -20,7 +19,7 @@ if TYPE_CHECKING:
     from django.db import models  # noqa
 
 
-__all__ = ["action", "ActionsModelAdmin", "hide_in_prod"]
+__all__ = ["action", "ActionsModelAdmin"]
 
 
 def isaction(obj):
@@ -36,10 +35,6 @@ class VisibleCallback(Protocol):
 
 def always_visible(**kwargs):
     return True
-
-
-def hide_in_prod(**kwargs):
-    return not settings.APPLICATION_ENVIRONMENT.is_production
 
 
 def action(
@@ -116,12 +111,6 @@ def action(
             def hide(self, request, pk):
                 obj = Model.objects.get(pk=pk)
                 obj.hide()
-
-            # 5. Visibility condition: don't show on prod
-
-            @action(list=True, visible=hide_in_prod)
-            def only_stage(self, request, pk):
-                pass
     """
 
     def decorator(f):
