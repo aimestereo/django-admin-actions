@@ -297,6 +297,7 @@ class ActionsModelAdmin(ModelAdmin):
         entrypoint_action,
         form_valid_callback,
         form_cls=forms.Form,
+        html_template_path="admin/intermediate_action.html"
     ):
         form = None
         opts = self.model._meta
@@ -317,7 +318,7 @@ class ActionsModelAdmin(ModelAdmin):
 
         return render(
             request,
-            "admin/intermediate_action.html",
+            html_template_path,
             context={
                 "action_name": entrypoint_action.__name__,
                 "action_short_description": entrypoint_action.short_description,
